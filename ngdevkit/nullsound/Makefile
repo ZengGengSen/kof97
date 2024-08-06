@@ -1,0 +1,58 @@
+# Copyright (c) 2018-2024 Damien Ciabrini
+# This file is part of ngdevkit
+#
+# ngdevkit is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Lesser General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# ngdevkit is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU Lesser General Public License
+# along with ngdevkit.  If not, see <http://www.gnu.org/licenses/>.
+
+all: libnullsound.a linkcheck.map
+
+-include ../../Makefile.config
+
+INCLUDE_FILES=helpers ports ym2610
+OBJS=entrypoint bios-commands adpcm ym2610 stream timer nss-fm nss-adpcm nss-ssg fx-vibrato fx-slide
+LIB=libnullsound.a
+
+VERSION=0.4
+
+# nullsound assumes that various data blocks are linked in RAM
+# within a 16bits address range that has constant MSB, to speed up
+# 8-bit pointer addition. This target ensure bounds are valid
+linkcheck.map: $(LIB)
+	$(Z80SDLD) -n -b DATA=0xf800 $@ $(LIB) -g cmd_jmptable=0 -i -w -m && \
+	$(PYTHON) check-bounds.py $@
+
+# NOTE: it's unclear whether a real ar lib can be passed as a .rel
+# argument to the linker, at least it sometimes fail to parse on MSYS2
+# make a bare concatenation of all .rel instead, as it does not contain
+# binary characters and can be reliably parsed by ASLink/sdld
+$(LIB): $(OBJS:%=%.rel)
+	cat $^ > $@
+
+%.rel: %.s
+	$(Z80SDAS) -a -g -l -p -s -u -o $@ $<
+
+install: install-nullsound install-include
+
+install-nullsound: $(LIB)
+	$(INSTALL) -d $(DESTDIR)$(prefix)/z80-neogeo-ihx/lib && \
+	$(INSTALL) $^ $(DESTDIR)$(prefix)/z80-neogeo-ihx/lib
+
+install-include: $(INCLUDE_FILES:%=%.inc)
+	$(INSTALL) -d $(DESTDIR)$(prefix)/z80-neogeo-ihx/include/nullsound && \
+	$(INSTALL) $^ $(DESTDIR)$(prefix)/z80-neogeo-ihx/include/nullsound
+
+
+clean:
+	rm -f *.lib *.rel *.lst *.rst *.sym *.map *~
+
+.PHONY: clean

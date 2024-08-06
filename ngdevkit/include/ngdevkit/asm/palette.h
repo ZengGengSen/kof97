@@ -1,0 +1,7 @@
+#ifndef __NGDEVKIT_ASM_PALETTE_H__
+#define __NGDEVKIT_ASM_PALETTE_H__
+
+#define PALETTE     0x400000
+#define PALETTE_END 0x402000
+
+#endif /* __NGDEVKIT_ASM_PALETTE_H__ */

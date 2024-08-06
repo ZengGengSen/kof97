@@ -1,0 +1,10 @@
+rom
+*.o
+*.elf
+*.lst
+*.rel
+*.sym
+*.map
+*.a
+
+gngeo_log.txt
