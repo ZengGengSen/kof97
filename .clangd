@@ -1,0 +1,6 @@
+CompileFlags:
+  Add:
+    - --target=m68k-unknown-elf
+    - -include=kof97.h
+    - "-Iinclude"
+    - -I.

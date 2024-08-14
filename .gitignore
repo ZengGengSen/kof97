@@ -1,0 +1,7 @@
+*.a
+*.o
+*.d
+*.elf
+/.cache
+runtime/ngdevkit-specs
+compile_commands.json
